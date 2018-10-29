@@ -31,6 +31,9 @@ const contentType = "application/octet-stream"
 // The key in which etag HMAC data is stored in object metadata
 const etagHmacMetadataKey = "Etag-Hmac"
 
+// ErrCodeS3KeyNotFound defines the error code for when S3 keys are missing
+const ErrCodeS3KeyNotFound = "NotFound"
+
 // New returns a Blobstore which uses HMAC-SHA-256 and AES-256-CBC
 func New(bucket string, svc *s3.S3, key string) (Blobstore, error) {
 	// Decode the encryption key
@@ -164,7 +167,7 @@ func (b s3Blobstore) Has(blobID string) (bool, error) {
 		// It is acceptable and expected that this could error because of missing keys
 		if awsErr, ok := err.(awserr.Error); ok {
 			// If the key is missing from the s3 bucket return false indicating the blob is not present
-			if awsErr.Code() == s3.ErrCodeNoSuchKey {
+			if awsErr.Code() == ErrCodeS3KeyNotFound {
 				return false, nil
 			}
 		}

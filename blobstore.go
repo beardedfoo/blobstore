@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 
 	"github.com/apexskier/cryptoPadding"
@@ -160,6 +161,13 @@ func (b s3Blobstore) Has(blobID string) (bool, error) {
 
 	// Process any error from the head request
 	if err != nil {
+		// It is acceptable and expected that this could error because of missing keys
+		if awsErr, ok := err.(awserr.Error); ok {
+			// If the key is missing from the s3 bucket return false indicating the blob is not present
+			if awsErr.Code() == s3.ErrCodeNoSuchKey {
+				return false, nil
+			}
+		}
 		return false, fmt.Errorf("HeadObject failed for blob %v: %v", blobID, err)
 	}
 

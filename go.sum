@@ -1,0 +1,6 @@
+github.com/apexskier/cryptoPadding v0.0.0-20140318015739-5b1a6ab1223a h1:y+1jKRTeSl+ttzlY12LixTjkTgfG5aejN4v4V+GQDj0=
+github.com/apexskier/cryptoPadding v0.0.0-20140318015739-5b1a6ab1223a/go.mod h1:BYnXIQFMKYgvEuJSWiGQCiDv/b8QEW5y1cvXWzv1MT0=
+github.com/aws/aws-sdk-go v1.15.64 h1:xI5HhxebTF+jVqVOraUDqI3kr24n+yTvslwZCo3OhGA=
+github.com/aws/aws-sdk-go v1.15.64/go.mod h1:E3/ieXAlvM0XWO57iftYVDLLvQ824smPP3ATZkfNZeM=
+github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8 h1:12VvqtR6Aowv3l/EQUlocDHW2Cp4G9WJVH7uyH8QFJE=
+github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=

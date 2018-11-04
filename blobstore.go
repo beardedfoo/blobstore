@@ -18,17 +18,11 @@ const hmacSubKeyID = "checksum"
 const hmacKeySize = 32
 
 // New returns a Blobstore which uses HMAC-SHA-256 and ChaCha20
-func New(backend Backend, key string) (*Blobstore, error) {
-	// Decode the encryption key
-	binKey, err := hex.DecodeString(key)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Blobstore{
-		masterKey: masterkey.New(binKey),
+func New(backend Backend, key masterkey.MasterKey) Blobstore {
+	return Blobstore{
+		masterKey: key,
 		backend: backend,
-	}, nil
+	}
 }
 
 // MACFunc defines functions which generate MAC's using secure hashes

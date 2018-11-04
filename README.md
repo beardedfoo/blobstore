@@ -1,2 +1,2 @@
 # blobstore
-An encrypted, authenticated blobstore for S3 in Go
+An secure blobstore for S3 in Go

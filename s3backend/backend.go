@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 
-	"github.com/beardedfoo/blobstore"
+	"github.com/beardedfoo/blobstore/backend"
 )
 
 // This is the content-type sent to S3
@@ -25,7 +25,7 @@ const etagMacMetadataKey = "Etag-Mac"
 const ErrCodeS3KeyNotFound = "NotFound"
 
 // New creates and returns a new blobstore backend in S3
-func New(bucket string, svc *s3.S3) blobstore.Backend {
+func New(bucket string, svc *s3.S3) backend.Backend {
 	return s3Backend{bucket: bucket, svc: svc}
 }
 
@@ -36,7 +36,7 @@ type s3Backend struct {
 }
 
 // Put uploads a blob into the S3 bucket
-func (b s3Backend) Put(blobID string, data []byte, macCallback blobstore.MACFunc) (error) {
+func (b s3Backend) Put(blobID string, data []byte, macCallback backend.MACFunc) (error) {
 	// Compute the expected ETag from S3 to validate the upload later
 	ciphertextMD5 := md5.Sum(data)
 	validETag := hex.EncodeToString(ciphertextMD5[:])
@@ -77,7 +77,7 @@ func (b s3Backend) Put(blobID string, data []byte, macCallback blobstore.MACFunc
 }
 
 // Verify returns true with no error if the blob `blobID` is stored intact in the S3 bucket
-func (b s3Backend) Verify(blobID string, macCallback blobstore.MACFunc) (bool, error) {
+func (b s3Backend) Verify(blobID string, macCallback backend.MACFunc) (bool, error) {
 	// Download the metadata from S3
 	resp, err := b.svc.HeadObject(&s3.HeadObjectInput{
 		Bucket: aws.String(b.bucket),
@@ -119,7 +119,7 @@ func (b s3Backend) Verify(blobID string, macCallback blobstore.MACFunc) (bool, e
 }
 
 // Get retrieves a blob from S3
-func (b s3Backend) Get(blobID string, macCallback blobstore.MACFunc) ([]byte, error) {
+func (b s3Backend) Get(blobID string, macCallback backend.MACFunc) ([]byte, error) {
 	// Download the data from S3
 	resp, err := b.svc.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(b.bucket),

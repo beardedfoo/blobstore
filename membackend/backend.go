@@ -4,11 +4,11 @@ package membackend
 import (
 	"fmt"
 
-	"github.com/beardedfoo/blobstore"
+	"github.com/beardedfoo/blobstore/backend"
 )
 
 // New returns a new volatile memory backend for a blobstore
-func New() blobstore.Backend {
+func New() backend.Backend {
 	backend := memBackend(make(map[string][]byte))
 	return &backend
 }
@@ -17,7 +17,7 @@ func New() blobstore.Backend {
 type memBackend map[string][]byte
 
 // Get returns a stored blob
-func (b memBackend) Get(blobID string, _ blobstore.MACFunc) ([]byte, error) {
+func (b memBackend) Get(blobID string, _ backend.MACFunc) ([]byte, error) {
 	if _, ok := b[blobID]; !ok {
 		return nil, fmt.Errorf("no such blobID in map")
 	}
@@ -25,13 +25,13 @@ func (b memBackend) Get(blobID string, _ blobstore.MACFunc) ([]byte, error) {
 }
 
 // Put sets the value for a blob in the store
-func (b memBackend) Put(blobID string, data []byte, _ blobstore.MACFunc) error {
+func (b memBackend) Put(blobID string, data []byte, _ backend.MACFunc) error {
 	b[blobID] = data
 	return nil
 }
 
 // Verify returns true with no error if a blob is stored
-func (b memBackend) Verify(blobID string, _ blobstore.MACFunc) (bool, error) {
+func (b memBackend) Verify(blobID string, _ backend.MACFunc) (bool, error) {
 	_, ok := b[blobID]
 	return ok, nil
 }

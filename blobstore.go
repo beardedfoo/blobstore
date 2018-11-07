@@ -10,6 +10,7 @@ import (
 
 	"golang.org/x/crypto/chacha20poly1305"
 
+	"github.com/beardedfoo/blobstore/backend"
 	"github.com/beardedfoo/masterkey"
 )
 
@@ -18,32 +19,17 @@ const hmacSubKeyID = "checksum"
 const hmacKeySize = 32
 
 // New returns a Blobstore which uses HMAC-SHA-256 and ChaCha20
-func New(backend Backend, key masterkey.MasterKey) Blobstore {
+func New(b backend.Backend, key masterkey.MasterKey) Blobstore {
 	return Blobstore{
 		masterKey: key,
-		backend: backend,
+		backend: b,
 	}
 }
-
-// MACFunc defines functions which generate MAC's using secure hashes
-type MACFunc func(data []byte) (checksum string, err error)
 
 // Blobstore provides secure access to a blobstore through a backend storage implementation
 type Blobstore struct {
 	masterKey masterkey.MasterKey
-	backend Backend
-}
-
-// Backend interfaces provide blob storage
-type Backend interface {
-	// Verify returns true with no error if the blob `blobID` is correctly stored
-	Verify(blobID string, checksumCallback MACFunc) (ok bool, err error)
-
-	// Put places a blob into storage
-	Put(blobID string, data []byte, checksumCallback MACFunc) error
-
-	// Get retrieves a blob from storage
-	Get(blobID string, checksum MACFunc) (data []byte, err error)
+	backend backend.Backend
 }
 
 func (b Blobstore) checksum(data []byte) (string, error) {
@@ -60,7 +46,7 @@ func (b Blobstore) checksum(data []byte) (string, error) {
 }
 
 // Encrypt data to be stored in the blobstore
-func (b Blobstore) Encrypt(subKeyID string, plaintext []byte) ([]byte, error) {
+func (b Blobstore) encrypt(subKeyID string, plaintext []byte) ([]byte, error) {
 	// Get the encryption key specified
 	encKey, err := b.masterKey.SubKey(subKeyID, chacha20poly1305.KeySize)
 	if err != nil {
@@ -85,7 +71,7 @@ func (b Blobstore) Encrypt(subKeyID string, plaintext []byte) ([]byte, error) {
 }
 
 // Decrypt data stored by the blobstore
-func (b Blobstore) Decrypt(subKeyID string, ciphertext []byte) ([]byte, error) {
+func (b Blobstore) decrypt(subKeyID string, ciphertext []byte) ([]byte, error) {
 	encKey, err := b.masterKey.SubKey(subKeyID, chacha20poly1305.KeySize)
 	if err != nil {
 		return nil, fmt.Errorf("error generating key material: %v", err)
@@ -129,7 +115,7 @@ func (b Blobstore) Put(data []byte) (string, error) {
 	}
 
 	// Encrypt the data
-	ciphertext, err := b.Encrypt(blobID, data)
+	ciphertext, err := b.encrypt(blobID, data)
 	if err != nil {
 		return "", fmt.Errorf("error encrypting blob: %v", err)
 	}
@@ -148,7 +134,7 @@ func (b Blobstore) Get(blobID string) ([]byte, error) {
 	ciphertext, err := b.backend.Get(blobID, b.checksum)
 
 	// Decrypt the blob
-	plaintext, err := b.Decrypt(blobID, ciphertext)
+	plaintext, err := b.decrypt(blobID, ciphertext)
 	if err != nil {
 		return nil, fmt.Errorf("error decrypting blob: %v", err)
 	}

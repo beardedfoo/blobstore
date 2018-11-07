@@ -1,4 +1,4 @@
-package blobstore_test
+package blobstore
 
 import (
 	"bytes"
@@ -6,7 +6,6 @@ import (
 	"io"
 	"testing"
 
-	"github.com/beardedfoo/blobstore"
 	"github.com/beardedfoo/blobstore/membackend"
 	"github.com/beardedfoo/masterkey"
 )
@@ -22,7 +21,7 @@ func TestEncryptedBlobs(t *testing.T) {
 
 	// Create a memory backed blobstore using the key
 	backend := membackend.New()
-	b := blobstore.New(backend, key)
+	b := New(backend, key)
 
 	// Generate some random plaintext
 	plaintext := make([]byte, 1024)
@@ -45,13 +44,13 @@ func TestEncryptedBlobs(t *testing.T) {
 	t.Logf("ciphertext: %v", ciphertext)
 
 	// Get the raw encrypted version of the blob
-	expected_ciphertext, err := b.Encrypt(blobID, plaintext)
+	expectedCiphertext, err := b.encrypt(blobID, plaintext)
 	if err != nil {
 		t.Fatalf("error encrypting plaintext: %v", err)
 	}
 
 	// Ensure the stored data matches the output of the encryption routine
-	if !bytes.Equal(ciphertext, expected_ciphertext) {
+	if !bytes.Equal(ciphertext, expectedCiphertext) {
 		t.Fatalf("stored data does not match expected ciphertext")
 	}
 }
@@ -66,7 +65,7 @@ func TestGet(t *testing.T) {
 
 	// Create a memory backed blobstore using the key
 	backend := membackend.New()
-	b := blobstore.New(backend, key)
+	b := New(backend, key)
 
 	// Generate some random plaintext
 	plaintext := make([]byte, 1024)

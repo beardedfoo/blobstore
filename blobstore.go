@@ -32,6 +32,7 @@ type Blobstore struct {
 	backend backend.Backend
 }
 
+// checksum computes an authenticated checksum of data using HMAC
 func (b Blobstore) checksum(data []byte) (string, error) {
 	// Get the key for HMAC operations
 	hmacKey, err := b.masterKey.SubKey(hmacSubKeyID, hmacKeySize)

@@ -14,7 +14,7 @@ import (
 	"github.com/beardedfoo/masterkey"
 )
 
-// Authenticate hashing operations with a 256-bit sub-const hmacSubKeyID = "checksum"
+// Authenticate hashing operations with a 256-bit subkey
 const hmacSubKeyID = "checksum"
 const hmacKeySize = 32
 

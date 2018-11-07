@@ -1,16 +1,17 @@
+// Package backend provides common definitions for blobstore backends
 package backend
 
-// MACFunc defines functions which generate MAC's using secure hashes
+// MACFunc defines how a blobstore will pass a utility function to the backends for computing secure hashes
 type MACFunc func(data []byte) (checksum string, err error)
 
 // Backend interfaces provide blob storage
 type Backend interface {
 	// Verify returns true with no error if the blob `blobID` is correctly stored
-	Verify(blobID string, checksumCallback MACFunc) (ok bool, err error)
+	Verify(blobID string, m MACFunc) (ok bool, err error)
 
 	// Put places a blob into storage
-	Put(blobID string, data []byte, checksumCallback MACFunc) error
+	Put(blobID string, data []byte, m MACFunc) error
 
 	// Get retrieves a blob from storage
-	Get(blobID string, checksum MACFunc) (data []byte, err error)
+	Get(blobID string, m MACFunc) (data []byte, err error)
 }

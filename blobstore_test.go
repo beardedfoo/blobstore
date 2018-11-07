@@ -55,3 +55,40 @@ func TestEncryptedBlobs(t *testing.T) {
 		t.Fatalf("stored data does not match expected ciphertext")
 	}
 }
+
+func TestGet(t *testing.T) {
+	// Create a random 4096-bit key
+	m := make([]byte, 4096)
+	if n, _ := io.ReadFull(rand.Reader, m); n != len(m) {
+		t.Fatalf("error creating key material")
+	}
+	key := masterkey.New(m)
+
+	// Create a memory backed blobstore using the key
+	backend := membackend.New()
+	b := blobstore.New(backend, key)
+
+	// Generate some random plaintext
+	plaintext := make([]byte, 1024)
+	if n, _ := io.ReadFull(rand.Reader, plaintext); n != len(plaintext) {
+		t.Fatalf("error creating plaintext")
+	}
+	t.Logf("plaintext: %v", plaintext)
+
+	// Place the plaintext in the blobstore
+	blobID, err := b.Put(plaintext)
+	if err != nil {
+		t.Fatalf("error uploading plaintext to blobstore: %v", err)
+	}
+
+	// Ensure the blob can be fetched
+	downloaded, err := b.Get(blobID)
+	if err != nil {
+		t.Fatalf("failed to fetch blob: %v", err)
+	}
+
+	// Ensure the downloaded data is the same
+	if !bytes.Equal(downloaded, plaintext) {
+		t.Fatalf("downloaded data does not match plaintext")
+	}
+ }

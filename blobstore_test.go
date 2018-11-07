@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"io"
-	"log"
 	"testing"
 
 	"github.com/beardedfoo/blobstore"
@@ -13,7 +12,7 @@ import (
 )
 
 // Ensure the stored data is encrypted
-func TestCrypto(t *testing.T) {
+func TestEncryptedBlobs(t *testing.T) {
 	// Create a random 4096-bit key
 	m := make([]byte, 4096)
 	if n, _ := io.ReadFull(rand.Reader, m); n != len(m) {
@@ -30,7 +29,7 @@ func TestCrypto(t *testing.T) {
 	if n, _ := io.ReadFull(rand.Reader, plaintext); n != len(plaintext) {
 		t.Fatalf("error creating plaintext")
 	}
-	log.Printf("plaintext: %v", plaintext)
+	t.Logf("plaintext: %v", plaintext)
 
 	// Place the plaintext in the blobstore
 	blobID, err := b.Put(plaintext)
@@ -39,14 +38,20 @@ func TestCrypto(t *testing.T) {
 	}
 
 	// Access the backend directly to retrieve the raw data stored
-	stored, err := backend.Get(blobID, nil)
+	ciphertext, err := backend.Get(blobID, nil)
 	if err != nil {
 		t.Fatalf("error fetching data from backend: %v", err)
 	}
-	log.Printf("stored: %v", stored)
+	t.Logf("ciphertext: %v", ciphertext)
 
-	// Check whether the stored data is the same as the raw data
-	if bytes.Equal(plaintext, stored) {
-		t.Fatalf("stored data does not differ from plaintext")
+	// Get the raw encrypted version of the blob
+	expected_ciphertext, err := b.Encrypt(blobID, plaintext)
+	if err != nil {
+		t.Fatalf("error encrypting plaintext: %v", err)
+	}
+
+	// Ensure the stored data matches the output of the encryption routine
+	if !bytes.Equal(ciphertext, expected_ciphertext) {
+		t.Fatalf("stored data does not match expected ciphertext")
 	}
 }

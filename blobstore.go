@@ -59,8 +59,8 @@ func (b Blobstore) checksum(data []byte) (string, error) {
 	return hex.EncodeToString(checksum.Sum(nil)), nil
 }
 
-// Encrypt data using a specified subkey
-func (b Blobstore) encrypt(subKeyID string, plaintext []byte) ([]byte, error) {
+// Encrypt data to be stored in the blobstore
+func (b Blobstore) Encrypt(subKeyID string, plaintext []byte) ([]byte, error) {
 	// Get the encryption key specified
 	encKey, err := b.masterKey.SubKey(subKeyID, chacha20poly1305.KeySize)
 	if err != nil {
@@ -84,8 +84,8 @@ func (b Blobstore) encrypt(subKeyID string, plaintext []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
-// Decrypt data using a specified subkey
-func (b Blobstore) decrypt(subKeyID string, ciphertext []byte) ([]byte, error) {
+// Decrypt data stored by the blobstore
+func (b Blobstore) Decrypt(subKeyID string, ciphertext []byte) ([]byte, error) {
 	encKey, err := b.masterKey.SubKey(subKeyID, chacha20poly1305.KeySize)
 	if err != nil {
 		return nil, fmt.Errorf("error generating key material: %v", err)
@@ -129,7 +129,7 @@ func (b Blobstore) Put(data []byte) (string, error) {
 	}
 
 	// Encrypt the data
-	ciphertext, err := b.encrypt(blobID, data)
+	ciphertext, err := b.Encrypt(blobID, data)
 	if err != nil {
 		return "", fmt.Errorf("error encrypting blob: %v", err)
 	}
@@ -148,7 +148,7 @@ func (b Blobstore) Get(blobID string) ([]byte, error) {
 	ciphertext, err := b.backend.Get(blobID, b.checksum)
 
 	// Decrypt the blob
-	plaintext, err := b.decrypt(blobID, ciphertext)
+	plaintext, err := b.Decrypt(blobID, ciphertext)
 	if err != nil {
 		return nil, fmt.Errorf("error decrypting blob: %v", err)
 	}
@@ -159,7 +159,7 @@ func (b Blobstore) Get(blobID string) ([]byte, error) {
 		return nil, fmt.Errorf("error computing checksum: %v", err)
 	}
 	if checksum != blobID {
-		return nil, fmt.Errorf("bad checksum in blob %v: %v", blobID, checksum)
+		return nil, fmt.Errorf("bad checksum `in blob %v: %v", blobID, checksum)
 	}
 
 	return plaintext, nil
